@@ -56,6 +56,9 @@
     <Compile Include="T_Setting.cs">
       <DependentUpon>wxModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="T_SysLogs.cs">
+      <DependentUpon>wxModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="wxModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
