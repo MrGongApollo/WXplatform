@@ -15,28 +15,42 @@ namespace WXplatform.Areas.weixin.Help
     {
         private static readonly object LockTokenObj = new object();
 
-        #region 微信api 地址
+        #region 操作类型枚举
         /// <summary>
-        /// 微信api 调用地址
+        /// 操作类型枚举
         /// </summary>
-        public Dictionary<string, string> Dic_WXUrls = new Dictionary<string, string> { 
-            {"Aauth2CheckAccessTokenUrl","https://api.weixin.qq.com/sns/auth?access_token={0}&openid={1}"},
-            {"Aauth2Confirm","https://open.weixin.qq.com/connect/oauth2/authorize?appid={0}&redirect_uri={1}&response_type=code&scope={2}&state=STATE#wechat_redirect"},
-            {"Aauth2GetAccessTokenUrl","https://api.weixin.qq.com/sns/oauth2/access_token?appid={0}&secret={1}&code={2}&grant_type=authorization_code"},
-            {"Aauth2GetWechatUserInfoUrl","https://api.weixin.qq.com/sns/userinfo?access_token={0}&openid={1}&lang=zh_CN"},
-            {"Aauth2RefreshAccessTokenUrl","https://api.weixin.qq.com/sns/oauth2/refresh_token?appid={0}&grant_type=refresh_token&refresh_token={1}"},
-            {"JsapiTicketUrl","https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi&access_token={0}"},
-            {"UnifiedorderUrl","https://api.mch.weixin.qq.com/pay/unifiedorder"}
-        };
+        public enum OperateType
+        {
+            /// <summary>
+            /// 查看
+            /// </summary>
+            view,
+            /// <summary>
+            /// 登录
+            /// </summary>
+            login,
+            /// <summary>
+            /// 新增
+            /// </summary>
+            add,
+            /// <summary>
+            /// 修改
+            /// </summary>
+            modify,
+            /// <summary>
+            /// 删除
+            /// </summary>
+            delete
+        }
         #endregion
-        
 
         #region 记录日志
+        #region 记录日志到数据库（用户日志表）
         /// <summary>
         /// 记录日志到数据库
         /// </summary>
         /// <param name="strTxt">内容</param>
-        public void WriteLogToDB(string strTxt)
+        public void WriteLogToDB(string strTxt, OperateType Otp, string Ip)
         {
             try
             {
@@ -44,9 +58,10 @@ namespace WXplatform.Areas.weixin.Help
                 {
                     T_logs _log = context.T_logs.Create();
                     _log.LogId = Guid.NewGuid().ToString("N");
-                    _log.Content = strTxt;
+                    _log.OperateContent = strTxt;
                     _log.CreateTime = DateTime.Now;
-                    _log.UserIP = getIp();
+                    _log.OperateType = Otp.ToString();
+                    _log.UserIP = Ip;
                     context.T_logs.Add(_log);
                     context.SaveChanges();
                 }
@@ -55,6 +70,33 @@ namespace WXplatform.Areas.weixin.Help
             {
             }
         }
+
+
+
+        #endregion
+        #region 记录日志到数据库（系统日志）
+        /// <summary>
+        /// 记录系统日志
+        /// </summary>
+        public void WriteSysLogToDB(string strContent)
+        {
+            try
+            {
+                using (wxEntities context = new wxEntities())
+                {
+                    T_SysLogs _log = context.T_SysLogs.Create();
+                    _log.SysLogId = Guid.NewGuid().ToString("N");
+                    _log.SysContent = strContent;
+                    _log.CreateTime = DateTime.Now;
+                    context.T_SysLogs.Add(_log);
+                    context.SaveChanges();
+                }
+            }
+            catch
+            {
+            }
+        }
+        #endregion
         #endregion
 
         #region 获取IP地址
@@ -109,6 +151,27 @@ namespace WXplatform.Areas.weixin.Help
         }
         #endregion
 
+        #region 获取设置
+        private KeyValuePair<string, string> GetAppConfig() {
+            KeyValuePair<string, string> kv=new KeyValuePair<string, string>("","");
+            try
+            {
+                using (wxEntities context = new wxEntities())
+                {
+                    string appID = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "AppID").FirstOrDefault().SettingValue,
+                        appSecret = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "AppSecret").FirstOrDefault().SettingValue;
+
+                    kv = new KeyValuePair<string, string>(appID, appSecret);
+                }
+            }
+            catch (Exception ex)
+            {
+                
+            }
+            return kv;
+        }
+        #endregion
+
         #region 获取access_token
         private string GetAccessToken()
         {
@@ -126,10 +189,11 @@ namespace WXplatform.Areas.weixin.Help
                         }
                         else
                         {
-
-                            Sys _sys = Sys.GetSingle();
+                            var kv=GetAppConfig();
+                            string _SYSID = kv.Key,
+                                   _SYSSecret = kv.Value;
                             string GET_URL =
-                            string.Format("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}", _sys.AppID, _sys.AppSecret);
+                            string.Format(new wxCOM.WXApiUrl().Dic_WXUrls["GetAccess_token"], _SYSID, _SYSSecret);
                             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(GET_URL);
                             req.Method = "GET";
                             req.ContentType = "application/x-www-form-urlencoded";
@@ -154,7 +218,8 @@ namespace WXplatform.Areas.weixin.Help
                                     else
                                     {
                                         RetMsg _rmsg = JsonConvert.DeserializeObject<RetMsg>(jsonstr);
-                                        WriteLogToDB(
+
+                                        WriteSysLogToDB(
                                             string.Format("获取access_token出错，错误原因：{0}", RetMsg.DicWxRetMsg[_rmsg.errcode])
                                             );
                                     }

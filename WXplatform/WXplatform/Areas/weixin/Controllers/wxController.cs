@@ -22,13 +22,22 @@ namespace WXplatform.Areas.weixin.Controllers
         
 
         #region Index
-        //
-        // GET: /weixin/wx/
-        [HttpGet]
-        public void Index()
+        public ActionResult Index()
         {
-            //GetAccessToken();
-            Valid();
+            if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
+            {
+                string postStr = PostInput();
+                if (!string.IsNullOrEmpty(postStr))
+                {
+                    new CommonHelp.CommonHelper().WriteSysLogToDB(postStr);//记录日志
+                    //ResponseMsg(postStr);
+                }
+            }
+            else if (Request.HttpMethod.ToLower() == "get")
+            {
+                Valid();//微信首次验证
+            }
+            return ViewBag;
         }
         #endregion
 
@@ -59,13 +68,9 @@ namespace WXplatform.Areas.weixin.Controllers
                         tmpStr = _help.SHA1(tmpStr).ToLower(); //进行sha1加密  FormsAuthentication.HashPasswordForStoringInConfigFile(tmpStr, "SHA1")
                         //加过密的字符串与微信发送的signature进行比较，一样则通过微信验证，否则失败。
                         ret = tmpStr == signature;
-                        T_logs _log = context.T_logs.Create();
-                        _log.LogId = Guid.NewGuid().ToString("N");
-                        _log.Content = string.Format("验证{0}！微信加密签名：{1}，时间戳{2}，随机数{2}", ret ? "成功" : "失败", signature, timestamp, nonce);
-                        _log.CreateTime = DateTime.Now;
-                        _log.UserIP = _help.getIp();
-                        context.T_logs.Add(_log);
-                        context.SaveChanges();
+
+                        _help.WriteLogToDB(string.Format("验证{0}！微信加密签名：{1}，时间戳{2}，随机数{2}", ret ? "成功" : "失败", signature, timestamp, nonce),
+                          CommonHelp.CommonHelper.OperateType.add,_help.getIp());
                     }
                 }
             }
@@ -119,20 +124,20 @@ namespace WXplatform.Areas.weixin.Controllers
         }
         #endregion
 
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
-        {
-            string postStr = "";
-            Valid();
-            if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
-            {
-                postStr = PostInput();
-                if (!string.IsNullOrEmpty(postStr))
-                {
-                    new CommonHelp.CommonHelper().WriteLogToDB(postStr);//记录日志
-                    //ResponseMsg(postStr);
-                }
-            }
-        }
+        //protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        //{
+        //    string postStr = "";
+        //    Valid();
+        //    if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
+        //    {
+        //        postStr = PostInput();
+        //        if (!string.IsNullOrEmpty(postStr))
+        //        {
+        //            new CommonHelp.CommonHelper().WriteSysLogToDB(postStr);//记录日志
+        //            //ResponseMsg(postStr);
+        //        }
+        //    }
+        //}
 
         
 
