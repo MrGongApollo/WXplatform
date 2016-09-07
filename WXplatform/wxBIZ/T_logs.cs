@@ -15,8 +15,9 @@ namespace wxBIZ
     public partial class T_logs
     {
         public string LogId { get; set; }
-        public string Content { get; set; }
         public string UserIP { get; set; }
         public Nullable<System.DateTime> CreateTime { get; set; }
+        public string OperateType { get; set; }
+        public string OperateContent { get; set; }
     }
 }

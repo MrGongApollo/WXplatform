@@ -18,7 +18,8 @@
             <PropertyRef Name="LogId" />
           </Key>
           <Property Name="LogId" Type="varchar" MaxLength="32" Nullable="false" />
-          <Property Name="Content" Type="varchar" MaxLength="500" />
+          <Property Name="OperateType" Type="varchar" MaxLength="20" />
+          <Property Name="OperateContent" Type="varchar" MaxLength="500" />
           <Property Name="UserIP" Type="varchar" MaxLength="20" />
           <Property Name="CreateTime" Type="datetime" />
         </EntityType>
@@ -52,9 +53,10 @@
             <PropertyRef Name="LogId" />
           </Key>
           <Property Name="LogId" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
-          <Property Name="Content" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="UserIP" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="OperateType" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="OperateContent" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="T_Access_Token">
           <Key>
@@ -84,9 +86,10 @@
           <EntitySetMapping Name="T_logs">
             <EntityTypeMapping TypeName="wxModel.T_logs">
               <MappingFragment StoreEntitySet="T_logs">
+                <ScalarProperty Name="OperateContent" ColumnName="OperateContent" />
+                <ScalarProperty Name="OperateType" ColumnName="OperateType" />
                 <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
                 <ScalarProperty Name="UserIP" ColumnName="UserIP" />
-                <ScalarProperty Name="Content" ColumnName="Content" />
                 <ScalarProperty Name="LogId" ColumnName="LogId" />
               </MappingFragment>
             </EntityTypeMapping>
