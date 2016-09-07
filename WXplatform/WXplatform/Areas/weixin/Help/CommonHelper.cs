@@ -258,8 +258,40 @@ namespace WXplatform.Areas.weixin.Help
             return BitConverter.ToString(hashedBytes).Replace("-", "");
         }
         #endregion
-       
 
+        #region 返回的JSON处理字符串
+         /// <summary>  
+         /// 返回JSon数据  
+         /// </summary>  
+         /// <param name="JSONData">要处理的JSON数据</param>  
+         /// <param name="Url">要提交的URL</param>  
+         /// <returns>返回的JSON处理字符串</returns>  
+         public string GetResponseData(string JSONData, string Url)
+         {
+             byte[] bytes = Encoding.UTF8.GetBytes(JSONData);
+             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+             request.Method = "POST";
+             request.ContentLength = bytes.Length;
+             request.ContentType = "text/xml";
+             Stream reqstream = request.GetRequestStream();
+             reqstream.Write(bytes, 0, bytes.Length);
+
+             //声明一个HttpWebRequest请求  
+             request.Timeout = 90000;
+             //设置连接超时时间  
+             request.Headers.Set("Pragma", "no-cache");
+             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+             Stream streamReceive = response.GetResponseStream();
+             Encoding encoding = Encoding.UTF8;
+
+             StreamReader streamReader = new StreamReader(streamReceive, encoding);
+             string strResult = streamReader.ReadToEnd();
+             streamReceive.Dispose();
+             streamReader.Dispose();
+
+             return strResult;
+         }
+         #endregion
     }
         
 }
