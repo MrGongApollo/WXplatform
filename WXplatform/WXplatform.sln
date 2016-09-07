@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WXplatform", "WXplatform\WXplatform.csproj", "{E44C16CA-3C8C-4A48-9EF9-F4296ECD6AE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wxBIZ", "wxBIZ\wxBIZ.csproj", "{4942601B-5C5F-4E32-BCBD-3ECAA6E077EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wxCOM", "wxCOM\wxCOM.csproj", "{F5F19C20-EFB3-4635-B121-DEEDFF1A539A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E44C16CA-3C8C-4A48-9EF9-F4296ECD6AE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E44C16CA-3C8C-4A48-9EF9-F4296ECD6AE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E44C16CA-3C8C-4A48-9EF9-F4296ECD6AE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E44C16CA-3C8C-4A48-9EF9-F4296ECD6AE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4942601B-5C5F-4E32-BCBD-3ECAA6E077EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4942601B-5C5F-4E32-BCBD-3ECAA6E077EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4942601B-5C5F-4E32-BCBD-3ECAA6E077EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4942601B-5C5F-4E32-BCBD-3ECAA6E077EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5F19C20-EFB3-4635-B121-DEEDFF1A539A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5F19C20-EFB3-4635-B121-DEEDFF1A539A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5F19C20-EFB3-4635-B121-DEEDFF1A539A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5F19C20-EFB3-4635-B121-DEEDFF1A539A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
