@@ -6,11 +6,22 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Web;
 using wxBIZ;
+using System.Net;
+using System.IO;
 
 namespace wxCOM
 {
     class Utils
     {
+        #region 微信xml回复消息格式
+        public Dictionary<string, string> Dic_XML_retMsg = new Dictionary<string, string> { 
+         ///返回图文消息项
+        {"Message_News_Item",@"<item><Title><![CDATA[{0}]]></Title><Description><![CDATA[{1}]]></Description><PicUrl><![CDATA[{2}]]></PicUrl><Url><![CDATA[{3}]]></Url></item>"}
+        /// 返回图文消息主体
+        ,{"Message_News_Main",@"<xml><ToUserName><![CDATA[{0}]]></ToUserName><FromUserName><![CDATA[{1}]]></FromUserName><CreateTime>{2}</CreateTime><MsgType><![CDATA[news]]></MsgType><ArticleCount>{3}</ArticleCount><Articles>{4}</Articles></xml> "}
+        };
+        #endregion
+
         #region 解析xml消息类型
         public static T ConvertObj<T>(string xmlstr)
         {
@@ -60,24 +71,6 @@ namespace wxCOM
         }
         #endregion
 
-        #region 返回图文消息项
-        /// <summary>
-        /// 返回图文消息项
-        /// </summary>
-        public static string Message_News_Item
-        {
-            get
-            {
-                return @"<item>
-    <Title><![CDATA[{0}]]></Title> 
-    <Description><![CDATA[{1}]]></Description>
-    <PicUrl><![CDATA[{2}]]></PicUrl>
-    <Url><![CDATA[{3}]]></Url>
-    </item>";
-            }
-        }
-        #endregion
-
         #region 返回格式化的Xml格式内容
         /// <summary>
         /// 返回格式化的Xml格式内容
@@ -102,9 +95,9 @@ namespace wxCOM
             string openId = string.Empty;
             try
             {
-                using(wxEntities context=new wxEntities())
+                using (wxEntities context = new wxEntities())
                 {
-                   openId=context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "OpenID").FirstOrDefault().SettingValue;
+                    openId = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "OpenID").FirstOrDefault().SettingValue;
                 }
             }
             catch (Exception)
@@ -114,5 +107,78 @@ namespace wxCOM
             return openId;
         }
         #endregion
+
+        #region 发送post请求
+        /// <summary>
+        /// 发送请求
+        /// </summary>
+        /// <param name="url">Url地址</param>
+        /// <param name="method">方法（post或get）</param>
+        /// <param name="method">数据类型</param>
+        /// <param name="requestData">数据</param>
+        public static string SendPostHttpRequest(string url, string requestData, string contentType = "application/x-www-form-urlencoded")
+        {
+            WebRequest request = (WebRequest)HttpWebRequest.Create(url);
+            request.Method = "POST";
+            byte[] postBytes = null;
+            request.ContentType = contentType;
+            postBytes = Encoding.UTF8.GetBytes(requestData);
+            request.ContentLength = postBytes.Length;
+            using (Stream outstream = request.GetRequestStream())
+            {
+                outstream.Write(postBytes, 0, postBytes.Length);
+            }
+            string result = string.Empty;
+            using (WebResponse response = request.GetResponse())
+            {
+                if (response != null)
+                {
+                    using (Stream stream = response.GetResponseStream())
+                    {
+                        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                        {
+                            result = reader.ReadToEnd();
+                        }
+                    }
+
+                }
+            }
+            return result;
+        }
+        #endregion
+
+        #region 发送get请求
+        /// <summary>
+        /// 发送get请求
+        /// </summary>
+        /// <param name="url">Url地址</param>
+        /// <param name="method">方法（post或get）</param>
+        /// <param name="method">数据类型</param>
+        /// <param name="requestData">数据</param>
+        public static string SendGetHttpRequest(string url, string contentType = "application/x-www-form-urlencoded")
+        {
+            WebRequest request = (WebRequest)HttpWebRequest.Create(url);
+            request.Method = "GET";
+            request.ContentType = contentType;
+            string result = string.Empty;
+            using (WebResponse response = request.GetResponse())
+            {
+                if (response != null)
+                {
+                    using (Stream stream = response.GetResponseStream())
+                    {
+                        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                        {
+                            result = reader.ReadToEnd();
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        #endregion
+
     }
 }
+
+

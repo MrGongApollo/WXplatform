@@ -20,10 +20,14 @@ namespace wxCOM
             {"Aauth2RefreshAccessTokenUrl","https://api.weixin.qq.com/sns/oauth2/refresh_token?appid={0}&grant_type=refresh_token&refresh_token={1}"},
             {"JsapiTicketUrl","https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi&access_token={0}"},
             {"UnifiedorderUrl","https://api.mch.weixin.qq.com/pay/unifiedorder"},
-            {"CreateWxMenu","https://api.weixin.qq.com/cgi-bin/menu/create?access_token={0}"},//创建自定义菜单 Post
-            {"QueryWxMenu","https://api.weixin.qq.com/cgi-bin/menu/get?access_token=ACCESS_TOKEN"},//查询自定义菜单 get方法
-            {"DeleteWxMenu","https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN"},//删除自定义菜单 GET
-            {"GetAccess_token","https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}"},//获取Access_token  GET
+            //创建自定义菜单 Post
+            {"CreateWxMenu","https://api.weixin.qq.com/cgi-bin/menu/create?access_token={0}"},
+            //查询自定义菜单 get方法
+            {"QueryWxMenu","https://api.weixin.qq.com/cgi-bin/menu/get?access_token=ACCESS_TOKEN"},
+            //删除自定义菜单 GET
+            {"DeleteWxMenu","https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN"},
+            //获取Access_token  GET
+            {"GetAccess_token","https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}"},
         };
         #endregion
     }
