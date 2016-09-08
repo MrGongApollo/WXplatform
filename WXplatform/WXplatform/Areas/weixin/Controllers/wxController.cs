@@ -20,28 +20,33 @@ namespace WXplatform.Areas.weixin.Controllers
     public class wxController : Controller
     {
         
-
-        #region Index
+        #region 消息抛送地址
         public ActionResult Index()
         {
-            if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
+            try
             {
-                string postStr = PostInput();
-                if (!string.IsNullOrEmpty(postStr))
+                if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
                 {
-                    new CommonHelp.CommonHelper().WriteSysLogToDB(postStr);//记录日志
-                    //ResponseMsg(postStr);
+                    string postStr = PostInput();
+                    if (!string.IsNullOrEmpty(postStr))
+                    {
+                        new CommonHelp.CommonHelper().WriteSysLogToDB(postStr);//记录日志
+                        MessageFactory.CreateMessage(postStr);//分析xml
+                        //ResponseMsg(postStr);
+                    }
+                }
+                else if (Request.HttpMethod.ToLower() == "get")
+                {
+                    Valid();//微信首次验证
                 }
             }
-            else if (Request.HttpMethod.ToLower() == "get")
+            catch (Exception ex)
             {
-                Valid();//微信首次验证
+                new CommonHelp.CommonHelper().WriteSysLogToLocal(ex.Message);
             }
             return ViewBag;
         }
         #endregion
-
-        
 
         #region 微信验证
         #region checkSignature
@@ -105,9 +110,21 @@ namespace WXplatform.Areas.weixin.Controllers
         #endregion
         #endregion
 
-
         #region 获取推送事件
-        
+        //protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        //{
+        //    string postStr = "";
+        //    Valid();
+        //    if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
+        //    {
+        //        postStr = PostInput();
+        //        if (!string.IsNullOrEmpty(postStr))
+        //        {
+        //            new CommonHelp.CommonHelper().WriteSysLogToDB(postStr);//记录日志
+        //            //ResponseMsg(postStr);
+        //        }
+        //    }
+        //}
         #endregion
 
         #region 返回来的数据
@@ -124,57 +141,47 @@ namespace WXplatform.Areas.weixin.Controllers
         }
         #endregion
 
-        //protected override void OnActionExecuting(ActionExecutingContext filterContext)
-        //{
-        //    string postStr = "";
-        //    Valid();
-        //    if (Request.HttpMethod.ToLower() == "post")//当普通微信用户向公众账号发消息时，微信服务器将POST该消息到填写的URL上
-        //    {
-        //        postStr = PostInput();
-        //        if (!string.IsNullOrEmpty(postStr))
-        //        {
-        //            new CommonHelp.CommonHelper().WriteSysLogToDB(postStr);//记录日志
-        //            //ResponseMsg(postStr);
-        //        }
-        //    }
-        //}
-
-        
-
-        #region 返回的JSON处理字符串
-        /// <summary>  
-        /// 返回JSon数据  
-        /// </summary>  
-        /// <param name="JSONData">要处理的JSON数据</param>  
-        /// <param name="Url">要提交的URL</param>  
-        /// <returns>返回的JSON处理字符串</returns>  
-        public string GetResponseData(string JSONData, string Url)
+        #region 解析消息
+        private void AnalysisWxMsg(string xml)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(JSONData);
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
-            request.Method = "POST";
-            request.ContentLength = bytes.Length;
-            request.ContentType = "text/xml";
-            Stream reqstream = request.GetRequestStream();
-            reqstream.Write(bytes, 0, bytes.Length);
+           BaseMessage msg=MessageFactory.CreateMessage(xml);
+           switch (msg.MsgType)
+           {
+               case MsgType.TEXT:
+                   break;
+               case MsgType.IMAGE:
+                   break;
+               case MsgType.VOICE:
+                   break;
+               case MsgType.VIDEO:
+                   break;
+               case MsgType.LOCATION:
+                   break;
+               case MsgType.LINK:
+                   break;
+               case MsgType.EVENT:
+                   if (msg is SubEventMessage)//订阅/取消订阅
+                   {
+                       msg =msg as SubEventMessage;
 
-            //声明一个HttpWebRequest请求  
-            request.Timeout = 90000;
-            //设置连接超时时间  
-            request.Headers.Set("Pragma", "no-cache");
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream streamReceive = response.GetResponseStream();
-            Encoding encoding = Encoding.UTF8;
-
-            StreamReader streamReader = new StreamReader(streamReceive, encoding);
-            string strResult = streamReader.ReadToEnd();
-            streamReceive.Dispose();
-            streamReader.Dispose();
-
-            return strResult;
+                   }
+                   else if (msg is NormalMenuEventMessage)//点击菜单
+                   {
+                       NormalMenuEventMessage _msg = msg as NormalMenuEventMessage;
+                       switch (_msg.EventKey)
+                       {
+                           default:
+                               break;
+                       }
+                   }
+                   break;
+               case MsgType.NEWS:
+                   break;
+               default:
+                   break;
+           }
         }
-        #endregion
-
         
+        #endregion
     }
 }
