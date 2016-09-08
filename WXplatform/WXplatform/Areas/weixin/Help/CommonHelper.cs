@@ -97,6 +97,31 @@ namespace WXplatform.Areas.weixin.Help
             }
         }
         #endregion
+        #region 记录错误日志到本地
+        /// <summary>
+        /// 记录系统日志
+        /// </summary>
+        public void WriteSysLogToLocal(string exmsg)
+        {
+            try
+            {
+                using (FileStream sw = new FileStream("err.txt", FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    char[] charData = exmsg.ToCharArray();
+                    //初始化字节数组
+                    byte[] byData = new byte[charData.Length];
+                    //将字符数组转换为正确的字节格式
+                    Encoder enc = Encoding.UTF8.GetEncoder();
+                    enc.GetBytes(charData, 0, charData.Length, byData, 0,true);
+                    sw.Seek(0, SeekOrigin.Begin);
+                    sw.Write(byData, 0, byData.Length);
+                }
+            }
+            catch
+            {
+            }
+        }
+        #endregion
         #endregion
 
         #region 获取IP地址
@@ -152,8 +177,9 @@ namespace WXplatform.Areas.weixin.Help
         #endregion
 
         #region 获取设置
-        private KeyValuePair<string, string> GetAppConfig() {
-            KeyValuePair<string, string> kv=new KeyValuePair<string, string>("","");
+        private KeyValuePair<string, string> GetAppConfig()
+        {
+            KeyValuePair<string, string> kv = new KeyValuePair<string, string>("", "");
             try
             {
                 using (wxEntities context = new wxEntities())
@@ -166,7 +192,7 @@ namespace WXplatform.Areas.weixin.Help
             }
             catch (Exception ex)
             {
-                
+
             }
             return kv;
         }
@@ -189,7 +215,7 @@ namespace WXplatform.Areas.weixin.Help
                         }
                         else
                         {
-                            var kv=GetAppConfig();
+                            var kv = GetAppConfig();
                             string _SYSID = kv.Key,
                                    _SYSSecret = kv.Value;
                             string GET_URL =
@@ -247,7 +273,7 @@ namespace WXplatform.Areas.weixin.Help
         /// </summary>
         /// <param name="txt"></param>
         /// <returns></returns>
-         public string SHA1(string txt)
+        public string SHA1(string txt)
         {
             if (string.IsNullOrEmpty(txt))
             {
@@ -260,38 +286,38 @@ namespace WXplatform.Areas.weixin.Help
         #endregion
 
         #region 返回的JSON处理字符串
-         /// <summary>  
-         /// 返回JSon数据  
-         /// </summary>  
-         /// <param name="JSONData">要处理的JSON数据</param>  
-         /// <param name="Url">要提交的URL</param>  
-         /// <returns>返回的JSON处理字符串</returns>  
-         public string GetResponseData(string JSONData, string Url)
-         {
-             byte[] bytes = Encoding.UTF8.GetBytes(JSONData);
-             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
-             request.Method = "POST";
-             request.ContentLength = bytes.Length;
-             request.ContentType = "text/xml";
-             Stream reqstream = request.GetRequestStream();
-             reqstream.Write(bytes, 0, bytes.Length);
+        /// <summary>  
+        /// 返回JSon数据  
+        /// </summary>  
+        /// <param name="JSONData">要处理的JSON数据</param>  
+        /// <param name="Url">要提交的URL</param>  
+        /// <returns>返回的JSON处理字符串</returns>  
+        public string GetResponseData(string JSONData, string Url)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(JSONData);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+            request.Method = "POST";
+            request.ContentLength = bytes.Length;
+            request.ContentType = "text/xml";
+            Stream reqstream = request.GetRequestStream();
+            reqstream.Write(bytes, 0, bytes.Length);
 
-             //声明一个HttpWebRequest请求  
-             request.Timeout = 90000;
-             //设置连接超时时间  
-             request.Headers.Set("Pragma", "no-cache");
-             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-             Stream streamReceive = response.GetResponseStream();
-             Encoding encoding = Encoding.UTF8;
+            //声明一个HttpWebRequest请求  
+            request.Timeout = 90000;
+            //设置连接超时时间  
+            request.Headers.Set("Pragma", "no-cache");
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            Stream streamReceive = response.GetResponseStream();
+            Encoding encoding = Encoding.UTF8;
 
-             StreamReader streamReader = new StreamReader(streamReceive, encoding);
-             string strResult = streamReader.ReadToEnd();
-             streamReceive.Dispose();
-             streamReader.Dispose();
+            StreamReader streamReader = new StreamReader(streamReceive, encoding);
+            string strResult = streamReader.ReadToEnd();
+            streamReceive.Dispose();
+            streamReader.Dispose();
 
-             return strResult;
-         }
-         #endregion
+            return strResult;
+        }
+        #endregion
     }
-        
+
 }
