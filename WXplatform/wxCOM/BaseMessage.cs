@@ -24,14 +24,28 @@ namespace wxCOM
         /// </summary>
         public MsgType MsgType { get; set; }
 
-        public virtual void ResponseNull()
-        {
-            Utils.ResponseWrite("");
-        }
-        public virtual void ResText(EnterParam param, string content)
-        {
 
+        #region 回复空消息
+        /// <summary>
+        /// 回复空消息
+        /// </summary>
+        public virtual void ResponseNull(string ToUserName)
+        {
+            Utils.ResponseWrite(ToUserName,"");
         }
+        #endregion
+        #region 回复文本消息
+        /// <summary>
+        /// 回复文本消息
+        /// </summary>
+        /// <param name="param"></param>
+        /// <param name="content"></param>
+        public virtual void ResText(string ToUserName, string content,EnterParam param = null)
+        {
+            Utils.ResponseWrite(ToUserName, content);
+        }
+        #endregion       
+        #region 回复消息(音乐)
         /// <summary>
         /// 回复消息(音乐)
         /// </summary>
@@ -39,17 +53,26 @@ namespace wxCOM
         {
 
         }
+        #endregion
+        #region 回复视频
+        /// <summary>
+        /// 回复视频
+        /// </summary>
+        /// <param name="param"></param>
+        /// <param name="v"></param>
         public void ResVideo(EnterParam param, VideoMessage v)
         {
         }
-
+        #endregion
+        #region 回复消息(图片)
         /// <summary>
         /// 回复消息(图片)
         /// </summary>
         public void ResPicture(EnterParam param, ImgMessage img, string domain)
         {
         }
-
+        #endregion
+        #region 回复消息（图文列表）
         /// <summary>
         /// 回复消息（图文列表）
         /// </summary>
@@ -58,6 +81,8 @@ namespace wxCOM
         public void ResArticles(EnterParam param, List<NewsMessage> art)
         {
         }
+        #endregion
+        #region 多客服转发
         /// <summary>
         /// 多客服转发
         /// </summary>
@@ -65,6 +90,10 @@ namespace wxCOM
         public void ResDKF(EnterParam param)
         {
         }
+        #endregion
+
+
+
         /// <summary>
         /// 多客服转发如果指定的客服没有接入能力(不在线、没有开启自动接入或者自动接入已满)，该用户会一直等待指定客服有接入能力后才会被接入，而不会被其他客服接待。建议在指定客服时，先查询客服的接入能力指定到有能力接入的客服，保证客户能够及时得到服务。
         /// </summary>
