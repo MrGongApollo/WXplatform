@@ -75,7 +75,7 @@ namespace WXplatform.Areas.weixin.Controllers
                         ret = tmpStr == signature;
 
                         _help.WriteLogToDB(string.Format("验证{0}！微信加密签名：{1}，时间戳{2}，随机数{2}", ret ? "成功" : "失败", signature, timestamp, nonce),
-                          CommonHelp.CommonHelper.OperateType.add,_help.getIp());
+                          CommonHelp.CommonHelper.OperateType.add,new Utils().getIp());
                     }
                 }
             }

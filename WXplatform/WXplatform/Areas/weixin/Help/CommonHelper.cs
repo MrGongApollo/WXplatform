@@ -13,8 +13,6 @@ namespace WXplatform.Areas.weixin.Help
 {
     public class CommonHelper
     {
-        private static readonly object LockTokenObj = new object();
-
         #region 操作类型枚举
         /// <summary>
         /// 操作类型枚举
@@ -112,7 +110,7 @@ namespace WXplatform.Areas.weixin.Help
                     byte[] byData = new byte[charData.Length];
                     //将字符数组转换为正确的字节格式
                     Encoder enc = Encoding.UTF8.GetEncoder();
-                    enc.GetBytes(charData, 0, charData.Length, byData, 0,true);
+                    enc.GetBytes(charData, 0, charData.Length, byData, 0, true);
                     sw.Seek(0, SeekOrigin.Begin);
                     sw.Write(byData, 0, byData.Length);
                 }
@@ -123,23 +121,7 @@ namespace WXplatform.Areas.weixin.Help
         }
         #endregion
         #endregion
-
-        #region 获取IP地址
-        /// <summary>
-        /// 获取IP地址
-        /// </summary>
-        /// <returns></returns>
-        public string getIp()
-        {
-            string ip = string.Empty;
-            if (!string.IsNullOrEmpty(System.Web.HttpContext.Current.Request.ServerVariables["HTTP_VIA"]))
-                ip = Convert.ToString(System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"]);
-            if (string.IsNullOrEmpty(ip))
-                ip = Convert.ToString(System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"]);
-            return ip;
-        }
-        #endregion
-
+               
         #region 发送消息
         /// <summary>
         /// 发送文字消息
@@ -149,7 +131,7 @@ namespace WXplatform.Areas.weixin.Help
         /// <returns></returns>        
         public bool SendMsgText(string Message, string fakeid)
         {
-            string _token = GetAccessToken();
+            string _token = new Utils().GetAccessToken();
             bool result = false;
             string strMsg = System.Web.HttpUtility.UrlEncode(Message);
             string padate = "type=1&content=" + strMsg + "&error=false&tofakeid=" + fakeid + "&token=" + _token + "&ajax=1";
@@ -175,98 +157,7 @@ namespace WXplatform.Areas.weixin.Help
             return result;
         }
         #endregion
-
-        #region 获取设置
-        private KeyValuePair<string, string> GetAppConfig()
-        {
-            KeyValuePair<string, string> kv = new KeyValuePair<string, string>("", "");
-            try
-            {
-                using (wxEntities context = new wxEntities())
-                {
-                    string appID = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "AppID").FirstOrDefault().SettingValue,
-                        appSecret = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "AppSecret").FirstOrDefault().SettingValue;
-
-                    kv = new KeyValuePair<string, string>(appID, appSecret);
-                }
-            }
-            catch (Exception ex)
-            {
-
-            }
-            return kv;
-        }
-        #endregion
-
-        #region 获取access_token
-        private string GetAccessToken()
-        {
-            string ret = string.Empty;
-            try
-            {
-                using (wxEntities context = new wxEntities())
-                {
-                    lock (LockTokenObj)
-                    {
-                        var _AToken = context.T_Access_Token.Where(g => g.UnValidTime > DateTime.Now).Select(p => p.AccessToken).FirstOrDefault();
-                        if (_AToken != null)
-                        {
-                            ret = _AToken;
-                        }
-                        else
-                        {
-                            var kv = GetAppConfig();
-                            string _SYSID = kv.Key,
-                                   _SYSSecret = kv.Value;
-                            string GET_URL =
-                            string.Format(new wxCOM.WXApiUrl().Dic_WXUrls["GetAccess_token"], _SYSID, _SYSSecret);
-                            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(GET_URL);
-                            req.Method = "GET";
-                            req.ContentType = "application/x-www-form-urlencoded";
-                            using (WebResponse wr = req.GetResponse())
-                            {
-                                using (StreamReader sr = new StreamReader(wr.GetResponseStream()))
-                                {
-                                    string jsonstr = sr.ReadToEnd();
-                                    #region 成功获取token
-                                    if (jsonstr.IndexOf("access_token") > 0)
-                                    {
-                                        AccessToken _atkModel = JsonConvert.DeserializeObject<AccessToken>(jsonstr);
-                                        T_Access_Token _atoken = context.T_Access_Token.Create();
-                                        _atoken.AccessToken = _atkModel.access_token;
-                                        _atoken.CreateTime = DateTime.Now;
-                                        _atoken.UnValidTime = DateTime.Now.AddSeconds(_atkModel.expires_in);
-                                        context.T_Access_Token.Add(_atoken);
-                                        context.SaveChanges();
-                                    }
-                                    #endregion
-                                    #region 返回错误信息
-                                    else
-                                    {
-                                        RetMsg _rmsg = JsonConvert.DeserializeObject<RetMsg>(jsonstr);
-
-                                        WriteSysLogToDB(
-                                            string.Format("获取access_token出错，错误原因：{0}", RetMsg.DicWxRetMsg[_rmsg.errcode])
-                                            );
-                                    }
-                                    #endregion
-                                }
-                            }
-
-
-                        }
-                    }
-                }
-            }
-            catch
-            {
-
-            }
-            return ret;
-        }
-
-        #endregion
-
+        
         #region SHA1加密
         /// <summary>
         /// SHA1加密
