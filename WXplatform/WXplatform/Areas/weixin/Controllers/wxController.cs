@@ -44,7 +44,7 @@ namespace WXplatform.Areas.weixin.Controllers
             {
                 new CommonHelp.CommonHelper().WriteSysLogToLocal(ex.Message);
             }
-            return ViewBag;
+            return View();
         }
         #endregion
 
