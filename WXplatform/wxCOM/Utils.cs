@@ -240,7 +240,7 @@ namespace wxCOM
                             string _SYSID = kv.Key,
                                    _SYSSecret = kv.Value;
                             string GET_URL =
-                            string.Format(new wxCOM.WXApiUrl().Dic_WXUrls["GetAccess_token"], _SYSID, _SYSSecret);
+                            string.Format(new wxCOM.WXApiUrl().Dic_WXUrls[wxCOM.WXApiUrl.Enum_WXUrls.GetAccess_token], _SYSID, _SYSSecret);
                             HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(GET_URL);
                             req.Method = "GET";
                             req.ContentType = "application/x-www-form-urlencoded";
