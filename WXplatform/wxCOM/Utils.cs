@@ -182,7 +182,7 @@ namespace wxCOM
         #endregion
 
         #region 获取设置
-        public KeyValuePair<string, string> GetAppConfig()
+        private KeyValuePair<string, string> GetAppConfig()
         {
             KeyValuePair<string, string> kv = new KeyValuePair<string, string>("", "");
             try
