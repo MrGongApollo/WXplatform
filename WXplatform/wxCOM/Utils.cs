@@ -11,7 +11,7 @@ using System.IO;
 
 namespace wxCOM
 {
-    class Utils
+   public class Utils
     {
         #region 微信xml回复消息格式
         public Dictionary<string, string> Dic_XML_retMsg = new Dictionary<string, string> { 
