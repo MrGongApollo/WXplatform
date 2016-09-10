@@ -8,11 +8,14 @@ using System.Web;
 using wxBIZ;
 using System.Net;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace wxCOM
 {
    public class Utils
     {
+       private static readonly object LockTokenObj = new object();
+
         #region 微信xml回复消息格式
         public Dictionary<string, string> Dic_XML_retMsg = new Dictionary<string, string> { 
          ///返回图文消息项
@@ -178,6 +181,138 @@ namespace wxCOM
         }
         #endregion
 
+        #region 获取设置
+        private KeyValuePair<string, string> GetAppConfig()
+        {
+            KeyValuePair<string, string> kv = new KeyValuePair<string, string>("", "");
+            try
+            {
+                using (wxEntities context = new wxEntities())
+                {
+                    string appID = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "AppID").FirstOrDefault().SettingValue,
+                        appSecret = context.T_Setting.Where(s => s.IsDeleted == false && s.SettingKey == "AppSecret").FirstOrDefault().SettingValue;
+
+                    kv = new KeyValuePair<string, string>(appID, appSecret);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return kv;
+        }
+        #endregion
+
+        #region 获取IP地址
+        /// <summary>
+        /// 获取IP地址
+        /// </summary>
+        /// <returns></returns>
+        public string getIp()
+        {
+            string ip = string.Empty;
+            if (!string.IsNullOrEmpty(System.Web.HttpContext.Current.Request.ServerVariables["HTTP_VIA"]))
+                ip = Convert.ToString(System.Web.HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"]);
+            if (string.IsNullOrEmpty(ip))
+                ip = Convert.ToString(System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"]);
+            return ip;
+        }
+        #endregion
+
+        #region 获取access_token
+        public string GetAccessToken()
+        {
+            string ret = string.Empty;
+            try
+            {
+                using (wxEntities context = new wxEntities())
+                {
+                    lock (LockTokenObj)
+                    {
+                        var _AToken = context.T_Access_Token.Where(g => g.UnValidTime > DateTime.Now).Select(p => p.AccessToken).FirstOrDefault();
+                        if (_AToken != null)
+                        {
+                            ret = _AToken;
+                        }
+                        else
+                        {
+                            var kv = GetAppConfig();
+                            string _SYSID = kv.Key,
+                                   _SYSSecret = kv.Value;
+                            string GET_URL =
+                            string.Format(new wxCOM.WXApiUrl().Dic_WXUrls["GetAccess_token"], _SYSID, _SYSSecret);
+                            HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(GET_URL);
+                            req.Method = "GET";
+                            req.ContentType = "application/x-www-form-urlencoded";
+                            using (WebResponse wr = req.GetResponse())
+                            {
+                                using (StreamReader sr = new StreamReader(wr.GetResponseStream()))
+                                {
+                                    string jsonstr = sr.ReadToEnd();
+                                    #region 成功获取token
+                                    if (jsonstr.IndexOf("access_token") > 0)
+                                    {
+                                        AccessToken _atkModel = JsonConvert.DeserializeObject<AccessToken>(jsonstr);
+                                        T_Access_Token _atoken = context.T_Access_Token.Create();
+                                        _atoken.AccessToken = _atkModel.access_token;
+                                        _atoken.CreateTime = DateTime.Now;
+                                        _atoken.UnValidTime = DateTime.Now.AddSeconds(_atkModel.expires_in);
+                                        context.T_Access_Token.Add(_atoken);
+                                        context.SaveChanges();
+                                    }
+                                    #endregion
+                                    #region 返回错误信息
+                                    else
+                                    {
+                                        RetMsg _rmsg = JsonConvert.DeserializeObject<RetMsg>(jsonstr);
+
+                                        WriteSysLogToDB(
+                                            string.Format("获取access_token出错，错误原因：{0}", RetMsg.DicWxRetMsg[_rmsg.errcode])
+                                            );
+                                    }
+                                    #endregion
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+            return ret;
+        }
+
+        #endregion
+
+        #region 记录日志
+        #region 记录日志到数据库（系统日志）
+        /// <summary>
+        /// 记录系统日志
+        /// </summary>
+        public void WriteSysLogToDB(string strContent)
+        {
+            try
+            {
+                using (wxEntities context = new wxEntities())
+                {
+                    T_SysLogs _log = context.T_SysLogs.Create();
+                    _log.SysLogId = Guid.NewGuid().ToString("N");
+                    _log.SysContent = strContent;
+                    _log.CreateTime = DateTime.Now;
+                    context.T_SysLogs.Add(_log);
+                    context.SaveChanges();
+                }
+            }
+            catch
+            {
+            }
+        }
+        #endregion
+        #endregion
     }
 }
 
