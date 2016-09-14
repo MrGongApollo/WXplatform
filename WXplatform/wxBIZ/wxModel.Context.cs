@@ -29,5 +29,7 @@ namespace wxBIZ
         public DbSet<T_Access_Token> T_Access_Token { get; set; }
         public DbSet<T_Setting> T_Setting { get; set; }
         public DbSet<T_SysLogs> T_SysLogs { get; set; }
+        public DbSet<T_ImgMessage> T_ImgMessage { get; set; }
+        public DbSet<T_TextMessage> T_TextMessage { get; set; }
     }
 }

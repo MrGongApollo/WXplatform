@@ -12,13 +12,15 @@ namespace wxBIZ
     using System;
     using System.Collections.Generic;
     
-    public partial class T_logs
+    public partial class T_ImgMessage
     {
-        public string LogId { get; set; }
-        public string UserIP { get; set; }
-        public Nullable<System.DateTime> CreateTime { get; set; }
-        public string OperateType { get; set; }
-        public string OperateContent { get; set; }
-        public string FromUserOpenID { get; set; }
+        public string MsgId { get; set; }
+        public string MediaId { get; set; }
+        public string FromUserName { get; set; }
+        public string ToUserName { get; set; }
+        public string MsgType { get; set; }
+        public string PicUrl { get; set; }
+        public Nullable<int> CreateTime { get; set; }
+        public Nullable<System.DateTime> SysCreateTime { get; set; }
     }
 }

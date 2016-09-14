@@ -13,11 +13,25 @@
           <Property Name="CreateTime" Type="datetime" />
           <Property Name="UnValidTime" Type="datetime" />
         </EntityType>
+        <EntityType Name="T_ImgMessage">
+          <Key>
+            <PropertyRef Name="MsgId" />
+          </Key>
+          <Property Name="MsgId" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="MediaId" Type="varchar" MaxLength="50" />
+          <Property Name="FromUserName" Type="varchar" MaxLength="200" />
+          <Property Name="ToUserName" Type="varchar" MaxLength="200" />
+          <Property Name="MsgType" Type="varchar" MaxLength="20" />
+          <Property Name="PicUrl" Type="varchar" MaxLength="300" />
+          <Property Name="CreateTime" Type="int" />
+          <Property Name="SysCreateTime" Type="datetime" />
+        </EntityType>
         <EntityType Name="T_logs">
           <Key>
             <PropertyRef Name="LogId" />
           </Key>
           <Property Name="LogId" Type="varchar" MaxLength="32" Nullable="false" />
+          <Property Name="FromUserOpenID" Type="varchar" MaxLength="100" />
           <Property Name="OperateType" Type="varchar" MaxLength="20" />
           <Property Name="OperateContent" Type="varchar" MaxLength="500" />
           <Property Name="UserIP" Type="varchar" MaxLength="20" />
@@ -42,11 +56,25 @@
           <Property Name="SysContent" Type="varchar" MaxLength="500" />
           <Property Name="CreateTime" Type="datetime" />
         </EntityType>
+        <EntityType Name="T_TextMessage">
+          <Key>
+            <PropertyRef Name="MsgId" />
+          </Key>
+          <Property Name="MsgId" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="FromUserName" Type="varchar" MaxLength="200" />
+          <Property Name="ToUserName" Type="varchar" MaxLength="200" />
+          <Property Name="MsgType" Type="varchar" MaxLength="20" />
+          <Property Name="Content" Type="varchar" MaxLength="500" />
+          <Property Name="CreateTime" Type="int" />
+          <Property Name="SysCreateTime" Type="datetime" />
+        </EntityType>
         <EntityContainer Name="wxModelStoreContainer">
           <EntitySet Name="T_Access_Token" EntityType="Self.T_Access_Token" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="T_ImgMessage" EntityType="Self.T_ImgMessage" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="T_logs" EntityType="Self.T_logs" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="T_Setting" EntityType="Self.T_Setting" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="T_SysLogs" EntityType="Self.T_SysLogs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="T_TextMessage" EntityType="Self.T_TextMessage" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -57,6 +85,8 @@
           <EntitySet Name="T_Access_Token" EntityType="wxModel.T_Access_Token" />
           <EntitySet Name="T_Setting" EntityType="wxModel.T_Setting" />
           <EntitySet Name="T_SysLogs" EntityType="wxModel.T_SysLogs" />
+          <EntitySet Name="T_ImgMessage" EntityType="wxModel.T_ImgMessage" />
+          <EntitySet Name="T_TextMessage" EntityType="wxModel.T_TextMessage" />
         </EntityContainer>
         <EntityType Name="T_logs">
           <Key>
@@ -67,6 +97,7 @@
           <Property Name="CreateTime" Type="DateTime" Precision="3" />
           <Property Name="OperateType" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="OperateContent" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="FromUserOpenID" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="T_Access_Token">
           <Key>
@@ -95,6 +126,31 @@
           <Property Name="SysContent" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="CreateTime" Type="DateTime" Precision="3" />
         </EntityType>
+        <EntityType Name="T_ImgMessage">
+          <Key>
+            <PropertyRef Name="MsgId" />
+          </Key>
+          <Property Name="MsgId" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="MediaId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="FromUserName" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="ToUserName" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="MsgType" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="PicUrl" Type="String" MaxLength="300" FixedLength="false" Unicode="false" />
+          <Property Name="CreateTime" Type="Int32" />
+          <Property Name="SysCreateTime" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="T_TextMessage">
+          <Key>
+            <PropertyRef Name="MsgId" />
+          </Key>
+          <Property Name="MsgId" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="FromUserName" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="ToUserName" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="MsgType" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Content" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="CreateTime" Type="Int32" />
+          <Property Name="SysCreateTime" Type="DateTime" Precision="3" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -104,6 +160,7 @@
           <EntitySetMapping Name="T_logs">
             <EntityTypeMapping TypeName="wxModel.T_logs">
               <MappingFragment StoreEntitySet="T_logs">
+                <ScalarProperty Name="FromUserOpenID" ColumnName="FromUserOpenID" />
                 <ScalarProperty Name="OperateContent" ColumnName="OperateContent" />
                 <ScalarProperty Name="OperateType" ColumnName="OperateType" />
                 <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
@@ -139,6 +196,33 @@
                 <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
                 <ScalarProperty Name="SysContent" ColumnName="SysContent" />
                 <ScalarProperty Name="SysLogId" ColumnName="SysLogId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="T_ImgMessage">
+            <EntityTypeMapping TypeName="wxModel.T_ImgMessage">
+              <MappingFragment StoreEntitySet="T_ImgMessage">
+                <ScalarProperty Name="SysCreateTime" ColumnName="SysCreateTime" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="PicUrl" ColumnName="PicUrl" />
+                <ScalarProperty Name="MsgType" ColumnName="MsgType" />
+                <ScalarProperty Name="ToUserName" ColumnName="ToUserName" />
+                <ScalarProperty Name="FromUserName" ColumnName="FromUserName" />
+                <ScalarProperty Name="MediaId" ColumnName="MediaId" />
+                <ScalarProperty Name="MsgId" ColumnName="MsgId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="T_TextMessage">
+            <EntityTypeMapping TypeName="wxModel.T_TextMessage">
+              <MappingFragment StoreEntitySet="T_TextMessage">
+                <ScalarProperty Name="SysCreateTime" ColumnName="SysCreateTime" />
+                <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
+                <ScalarProperty Name="Content" ColumnName="Content" />
+                <ScalarProperty Name="MsgType" ColumnName="MsgType" />
+                <ScalarProperty Name="ToUserName" ColumnName="ToUserName" />
+                <ScalarProperty Name="FromUserName" ColumnName="FromUserName" />
+                <ScalarProperty Name="MsgId" ColumnName="MsgId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

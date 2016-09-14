@@ -50,6 +50,9 @@
     <Compile Include="T_Access_Token.cs">
       <DependentUpon>wxModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="T_ImgMessage.cs">
+      <DependentUpon>wxModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="T_logs.cs">
       <DependentUpon>wxModel.tt</DependentUpon>
     </Compile>
@@ -57,6 +60,9 @@
       <DependentUpon>wxModel.tt</DependentUpon>
     </Compile>
     <Compile Include="T_SysLogs.cs">
+      <DependentUpon>wxModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="T_TextMessage.cs">
       <DependentUpon>wxModel.tt</DependentUpon>
     </Compile>
     <Compile Include="wxModel.Context.cs">
