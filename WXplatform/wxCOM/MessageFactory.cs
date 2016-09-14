@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Xml.Linq;
+using wxBIZ;
 
 namespace wxCOM
 {
@@ -163,24 +164,64 @@ namespace wxCOM
                         Content = string.Format("你刚才居然对我说了：{0}", receiveMsg.Content)
                     };
                     _retmsg.ResText(_retmsg);
+                    #region 保存到数据库
+                     try
+                    {
+                        using (wxEntities _db=new wxEntities())
+                        {
+                            _db.T_TextMessage.Add(new T_TextMessage
+                            {
+                                MsgId=receiveMsg.MsgId,
+                                FromUserName = receiveMsg.FromUserName,
+                                ToUserName=receiveMsg.ToUserName,
+                                MsgType = receiveMsg.MsgType.ToString(),
+                                CreateTime=receiveMsg.CreateTime,
+                                Content=receiveMsg.Content,
+                                SysCreateTime=DateTime.Now
+                            });
+                            _db.SaveChanges();
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+
+                    #endregion
                     return receiveMsg;
                 #endregion
                 #region 图片消息
                 case MsgType.IMAGE:
                     ImgMessage receiveImg = Utils.ConvertObj<ImgMessage>(xml);
-
-                    ImgMessage postImg = new ImgMessage();
-
                     System.Reflection.PropertyInfo[] Props = receiveImg.GetType().GetProperties();
-                    foreach (System.Reflection.PropertyInfo Prop in Props)
+                   
+                    #region 记录到数据库
+                    try
                     {
-                        var _val = receiveImg.GetType().GetProperty(Prop.Name).GetValue(receiveImg);
-                        postImg.GetType().GetProperty(Prop.Name).SetValue(postImg, _val);
-                    }
-                    postImg.FromUserName = receiveImg.ToUserName;
-                    postImg.ToUserName = receiveImg.FromUserName;
+                        using (wxEntities _db=new wxEntities())
+                        {
+                            T_ImgMessage Img = _db.T_ImgMessage.Create();
+                            Img.SysCreateTime = DateTime.Now;
 
-                    new ImgMessage().ResPicture(null, postImg,null);
+                            ImgMessage postImg = new ImgMessage();
+                            foreach (System.Reflection.PropertyInfo Prop in Props)
+                            {
+                                var _val = receiveImg.GetType().GetProperty(Prop.Name).GetValue(receiveImg);
+                                postImg.GetType().GetProperty(Prop.Name).SetValue(postImg, _val);
+                                Img.GetType().GetProperty(Prop.Name).SetValue(Img, _val);
+                            }
+                            #region 回复图片消息
+                            postImg.FromUserName = receiveImg.ToUserName;
+                            postImg.ToUserName = receiveImg.FromUserName;
+                            new ImgMessage().ResPicture(null, postImg, null);
+                            #endregion
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+                    #endregion
 
                     return receiveImg;
                 #endregion
