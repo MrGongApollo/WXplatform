@@ -149,23 +149,64 @@ namespace wxCOM
                     return null;
                 }
             }
+
             switch (type)
             {
+                #region 文字消息
                 case MsgType.TEXT:
                     //自动回复消息
-                    TextMessage postMsg = Utils.ConvertObj<TextMessage>(xml);
-                    new TextMessage().ResText(postMsg.FromUserName, string.Format("你刚才居然对我说了：{0}", postMsg.Content));
-                    return postMsg;
-                case MsgType.IMAGE: return Utils.ConvertObj<ImgMessage>(xml);
+                    TextMessage receiveMsg = Utils.ConvertObj<TextMessage>(xml);
+                    TextMessage _retmsg = new TextMessage()
+                    {
+                        FromUserName = receiveMsg.ToUserName,
+                        ToUserName = receiveMsg.FromUserName,
+                        Content = string.Format("你刚才居然对我说了：{0}", receiveMsg.Content)
+                    };
+                    _retmsg.ResText(_retmsg);
+                    return receiveMsg;
+                #endregion
+                #region 图片消息
+                case MsgType.IMAGE:
+                    ImgMessage receiveImg = Utils.ConvertObj<ImgMessage>(xml);
+
+                    ImgMessage postImg = new ImgMessage();
+
+                    System.Reflection.PropertyInfo[] Props = receiveImg.GetType().GetProperties();
+                    foreach (System.Reflection.PropertyInfo Prop in Props)
+                    {
+                        var _val = receiveImg.GetType().GetProperty(Prop.Name).GetValue(receiveImg);
+                        postImg.GetType().GetProperty(Prop.Name).SetValue(postImg, _val);
+                    }
+                    postImg.FromUserName = receiveImg.ToUserName;
+                    postImg.ToUserName = receiveImg.FromUserName;
+
+                    new ImgMessage().ResPicture(null, postImg,null);
+
+                    return receiveImg;
+                #endregion
+                #region 视频消息
                 case MsgType.VIDEO: return Utils.ConvertObj<VideoMessage>(xml);
+                #endregion
+                #region 语言消息
                 case MsgType.VOICE:
                     VoiceMessage postVoice = Utils.ConvertObj<VoiceMessage>(xml);
-                    new TextMessage().ResText(postVoice.FromUserName, string.Format("已经智能辨别您的语言消息：{0}", postVoice.Recognition));
+                    TextMessage retmsg = new TextMessage() {
+                        FromUserName = postVoice.ToUserName,
+                        ToUserName = postVoice.FromUserName,
+                        Content=string.Format("已经智能辨别您的语言消息：{0}", postVoice.Recognition)
+                    };
+                    retmsg.ResText(retmsg);
                     return postVoice;
+                #endregion
+                #region 链接消息
                 case MsgType.LINK:
                     return Utils.ConvertObj<LinkMessage>(xml);
+                #endregion
+                #region 地理消息
                 case MsgType.LOCATION:
                     return Utils.ConvertObj<LocationMessage>(xml);
+                #endregion
+                #region 事件消息
                 case MsgType.EVENT://事件类型
                     {
                         var eventtype = (EventType)Enum.Parse(typeof(EventType), xdoc.Element("Event").Value.ToUpper());
@@ -179,20 +220,31 @@ namespace wxCOM
                             //case EventType.LOCATION_SELECT: return Utils.ConvertObj<LocationMenuEventMessage>(xml);
                             case EventType.SCAN: return Utils.ConvertObj<ScanEventMessage>(xml);
                             case EventType.SUBSCRIBE:
+                                SubEventMessage receivesubmgs=Utils.ConvertObj<SubEventMessage>(xml);
                                 //关注时自动回复消息
-                                new TextMessage().ResText(FromUserName, "欢迎关注测试平台！");
-                                return Utils.ConvertObj<SubEventMessage>(xml);
+                                TextMessage submsg = new TextMessage
+                                {
+                                    FromUserName = receivesubmgs.ToUserName,
+                                    ToUserName = receivesubmgs.FromUserName,
+                                    Content = "欢迎关注测试平台！"
+                                };
+                                submsg.ResText(submsg);
+
+                                return receivesubmgs;
                             case EventType.UNSUBSCRIBE: return Utils.ConvertObj<SubEventMessage>(xml);
                             case EventType.SCANCODE_WAITMSG: return Utils.ConvertObj<ScanMenuEventMessage>(xml);
                             default:
                                 return Utils.ConvertObj<EventMessage>(xml);
                         }
                     } break;
+                #endregion
+                #region 其他消息
                 default:
                     return Utils.ConvertObj<BaseMessage>(xml);
+                #endregion
             }
         }
         #endregion
-        
+
     }
 }

@@ -17,11 +17,15 @@ namespace wxCOM
        private static readonly object LockTokenObj = new object();
 
         #region 微信xml回复消息格式
-        public Dictionary<string, string> Dic_XML_retMsg = new Dictionary<string, string> { 
+        public static Dictionary<string, string> Dic_XML_retMsg = new Dictionary<string, string> { 
          ///返回图文消息项
         {"Message_News_Item",@"<item><Title><![CDATA[{0}]]></Title><Description><![CDATA[{1}]]></Description><PicUrl><![CDATA[{2}]]></PicUrl><Url><![CDATA[{3}]]></Url></item>"}
         /// 返回图文消息主体
         ,{"Message_News_Main",@"<xml><ToUserName><![CDATA[{0}]]></ToUserName><FromUserName><![CDATA[{1}]]></FromUserName><CreateTime>{2}</CreateTime><MsgType><![CDATA[news]]></MsgType><ArticleCount>{3}</ArticleCount><Articles>{4}</Articles></xml> "}
+        //图片消息
+        ,{"Message_Pic",@"<xml><ToUserName><![CDATA[{0}]]></ToUserName><FromUserName><![CDATA[{1}]]></FromUserName><CreateTime>{2}</CreateTime><MsgType><![CDATA[image]]></MsgType><Image><MediaId><![CDATA[{3}]]></MediaId></Image></xml>"}
+        //
+        ,{"Message_Msg",@"<xml><ToUserName><![CDATA[{0}]]></ToUserName><FromUserName><![CDATA[{1}]]></FromUserName><CreateTime>{2}</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[{3}]]></Content><FuncFlag>1</FuncFlag></xml>"}
         };
         #endregion
 
@@ -64,9 +68,24 @@ namespace wxCOM
         /// 回复消息
         /// </summary>
         /// <param name="msg"></param>
-        public static void ResponseWrite(string ToUserName, string strContent)
+        public static void ResponseWrite(BaseMessage BaseMsg)
         {
-            string responseContent = FormatTextXML(ToUserName, strContent);
+            string responseContent = FormatTextXML(BaseMsg);//解析消息
+            
+            //如果解析失败，返回为空字符串，自动回复 空消息
+            responseContent = string.IsNullOrEmpty(responseContent) 
+                ? 
+                //返回 空字符串
+                FormatTextXML(new TextMessage() { 
+            FromUserName=BaseMsg.ToUserName,
+            ToUserName=BaseMsg.FromUserName,
+            CreateTime =(int)DateTime.Now.Subtract(new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds,
+            Content=""
+                })
+                :
+                responseContent;
+
+
             HttpContext.Current.Response.ContentType = "text/xml";
             HttpContext.Current.Response.ContentEncoding = Encoding.UTF8;
             HttpContext.Current.Response.Write(responseContent);
@@ -82,9 +101,56 @@ namespace wxCOM
         /// <param name="FromUserName">用户号</param>
         /// <param name="Content">回复内容</param>
         /// <returns></returns>
-        private static string FormatTextXML(string ToUserName, string Content)
+        private static string FormatTextXML(BaseMessage BaseMsg)
         {
-            return "<xml><ToUserName><![CDATA[" + ToUserName + "]]></ToUserName><FromUserName><![CDATA[" + GetOpenID() + "]]></FromUserName><CreateTime>" + DateTime.Now.Subtract(new DateTime(1970, 1, 1, 8, 0, 0)).TotalSeconds.ToString() + "</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[" + Content + "]]></Content><FuncFlag>1</FuncFlag></xml>";
+            string XML = "";
+            switch (BaseMsg.MsgType)
+            {
+                case MsgType.TEXT:
+                    TextMessage txtmsg = (TextMessage)BaseMsg;
+                    XML = string.Format(Dic_XML_retMsg["Message_Msg"], txtmsg.ToUserName, txtmsg.FromUserName, txtmsg.CreateTime, txtmsg.Content);
+                    break;
+                case MsgType.IMAGE:
+                    ImgMessage imgmsg = (ImgMessage)BaseMsg;
+                    XML = string.Format(Dic_XML_retMsg["Message_Pic"], imgmsg.ToUserName, imgmsg.FromUserName, imgmsg.CreateTime, imgmsg.MediaId);
+                    break;
+                case MsgType.VOICE:
+                    break;
+                case MsgType.VIDEO:
+                    break;
+                case MsgType.LOCATION:
+                    break;
+                case MsgType.LINK:
+                    break;
+                case MsgType.EVENT:
+                    if (BaseMsg is ScanMenuEventMessage)
+                    {
+
+                    }
+                    else if (BaseMsg is NormalMenuEventMessage)
+                    {
+
+                    }
+                    else if (BaseMsg is LocationEventMessage)
+                    {
+
+                    }
+                    else if (BaseMsg is ScanEventMessage)
+                    {
+
+                    }
+                    else if (BaseMsg is SubEventMessage)
+                    {
+                        
+                    }
+                    break;
+                case MsgType.NEWS:
+                    break;
+                default:
+                    break;
+            }
+
+            return XML;
         }
         #endregion
 

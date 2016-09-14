@@ -31,7 +31,7 @@ namespace wxCOM
         /// </summary>
         public virtual void ResponseNull(string ToUserName)
         {
-            Utils.ResponseWrite(ToUserName,"");
+           // Utils.ResponseWrite(ToUserName,"");
         }
         #endregion
         #region 回复文本消息
@@ -40,9 +40,9 @@ namespace wxCOM
         /// </summary>
         /// <param name="param"></param>
         /// <param name="content"></param>
-        public virtual void ResText(string ToUserName, string content,EnterParam param = null)
+        public virtual void ResText(TextMessage tmsg,EnterParam param = null)
         {
-            Utils.ResponseWrite(ToUserName, content);
+            Utils.ResponseWrite(tmsg);
         }
         #endregion       
         #region 回复消息(音乐)
@@ -70,6 +70,7 @@ namespace wxCOM
         /// </summary>
         public void ResPicture(EnterParam param, ImgMessage img, string domain)
         {
+            Utils.ResponseWrite(img);
         }
         #endregion
         #region 回复消息（图文列表）
