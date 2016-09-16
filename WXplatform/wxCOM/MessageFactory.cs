@@ -231,7 +231,7 @@ namespace wxCOM
                     }
                     catch (Exception ex)
                     {
-                        new Utils().WriteSysLogToDB(ex.Message);
+                        new Utils().WriteSysLogToDB(ex.Message,Utils.SysLogType.error);
                     }
                     #endregion
 
