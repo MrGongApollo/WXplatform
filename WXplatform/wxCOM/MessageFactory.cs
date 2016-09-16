@@ -202,14 +202,26 @@ namespace wxCOM
                         {
                             T_ImgMessage Img = _db.T_ImgMessage.Create();
                             Img.SysCreateTime = DateTime.Now;
-
                             ImgMessage postImg = new ImgMessage();
                             foreach (System.Reflection.PropertyInfo Prop in Props)
                             {
                                 var _val = receiveImg.GetType().GetProperty(Prop.Name).GetValue(receiveImg);
                                 postImg.GetType().GetProperty(Prop.Name).SetValue(postImg, _val);
-                                Img.GetType().GetProperty(Prop.Name).SetValue(Img, _val);
+                                var ImgProp = Img.GetType().GetProperty(Prop.Name);
+                                if (ImgProp != null)
+                                {
+                                    if (Prop.Name == "MsgType")
+                                    {
+                                        Img.MsgType = receiveImg.MsgType.ToString();
+                                    }
+                                    else
+                                    {
+                                        ImgProp.SetValue(Img, _val);
+                                    }
+                                }
                             }
+                            _db.T_ImgMessage.Add(Img);
+                            _db.SaveChangesAsync();
                             #region 回复图片消息
                             postImg.FromUserName = receiveImg.ToUserName;
                             postImg.ToUserName = receiveImg.FromUserName;
@@ -217,9 +229,9 @@ namespace wxCOM
                             #endregion
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        
+                        new Utils().WriteSysLogToDB(ex.Message);
                     }
                     #endregion
 
