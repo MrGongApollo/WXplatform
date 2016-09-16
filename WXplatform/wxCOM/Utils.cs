@@ -16,6 +16,18 @@ namespace wxCOM
     {
        private static readonly object LockTokenObj = new object();
 
+       public enum SysLogType
+       {
+           /// <summary>
+           /// 普通日志
+           /// </summary>
+           normal,
+           /// <summary>
+           /// 错误日志
+           /// </summary>
+           error
+       }
+
         #region 微信xml回复消息格式
         public static Dictionary<string, string> Dic_XML_retMsg = new Dictionary<string, string> { 
          ///返回图文消息项
@@ -359,7 +371,7 @@ namespace wxCOM
         /// <summary>
         /// 记录系统日志
         /// </summary>
-        public void WriteSysLogToDB(string strContent)
+        public void WriteSysLogToDB(string strContent, SysLogType logtype = SysLogType.normal)
         {
             try
             {
@@ -368,6 +380,7 @@ namespace wxCOM
                     T_SysLogs _log = context.T_SysLogs.Create();
                     _log.SysLogId = Guid.NewGuid().ToString("N");
                     _log.SysContent = strContent;
+                    _log.LogType= logtype.ToString();
                     _log.CreateTime = DateTime.Now;
                     context.T_SysLogs.Add(_log);
                     context.SaveChanges();
