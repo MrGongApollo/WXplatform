@@ -17,5 +17,6 @@ namespace wxBIZ
         public string SysLogId { get; set; }
         public string SysContent { get; set; }
         public Nullable<System.DateTime> CreateTime { get; set; }
+        public string LogType { get; set; }
     }
 }
