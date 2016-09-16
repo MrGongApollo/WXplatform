@@ -17,8 +17,8 @@
           <Key>
             <PropertyRef Name="MsgId" />
           </Key>
-          <Property Name="MsgId" Type="varchar" MaxLength="50" Nullable="false" />
-          <Property Name="MediaId" Type="varchar" MaxLength="50" />
+          <Property Name="MsgId" Type="varchar" MaxLength="64" Nullable="false" />
+          <Property Name="MediaId" Type="varchar" MaxLength="64" />
           <Property Name="FromUserName" Type="varchar" MaxLength="200" />
           <Property Name="ToUserName" Type="varchar" MaxLength="200" />
           <Property Name="MsgType" Type="varchar" MaxLength="20" />
@@ -53,6 +53,7 @@
             <PropertyRef Name="SysLogId" />
           </Key>
           <Property Name="SysLogId" Type="varchar" MaxLength="32" Nullable="false" />
+          <Property Name="LogType" Type="varchar" MaxLength="10" />
           <Property Name="SysContent" Type="varchar" MaxLength="500" />
           <Property Name="CreateTime" Type="datetime" />
         </EntityType>
@@ -60,7 +61,7 @@
           <Key>
             <PropertyRef Name="MsgId" />
           </Key>
-          <Property Name="MsgId" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="MsgId" Type="varchar" MaxLength="64" Nullable="false" />
           <Property Name="FromUserName" Type="varchar" MaxLength="200" />
           <Property Name="ToUserName" Type="varchar" MaxLength="200" />
           <Property Name="MsgType" Type="varchar" MaxLength="20" />
@@ -125,6 +126,7 @@
           <Property Name="SysLogId" Type="String" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
           <Property Name="SysContent" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="CreateTime" Type="DateTime" Precision="3" />
+          <Property Name="LogType" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="T_ImgMessage">
           <Key>
@@ -193,6 +195,7 @@
           <EntitySetMapping Name="T_SysLogs">
             <EntityTypeMapping TypeName="wxModel.T_SysLogs">
               <MappingFragment StoreEntitySet="T_SysLogs">
+                <ScalarProperty Name="LogType" ColumnName="LogType" />
                 <ScalarProperty Name="CreateTime" ColumnName="CreateTime" />
                 <ScalarProperty Name="SysContent" ColumnName="SysContent" />
                 <ScalarProperty Name="SysLogId" ColumnName="SysLogId" />
